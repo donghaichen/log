@@ -1,0 +1,17 @@
+{
+  "name": "clovers/log",
+  "description": "Clover log package",
+  "keywords": ["php", "log", "clover"],
+  "license": "MIT",
+  "require": {
+    "php": ">=5.5.9"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "4.5.*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Clovers\\Log\\": "src/"
+    }
+  }
+}
