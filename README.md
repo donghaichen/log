@@ -1,13 +1,10 @@
-# 简介
+#Clovers 框架核心日志管理
 
-Clovers 框架核心视图
-
-## 安装
+## Install
 ```shell
- composer require clovers/view
+ composer require clovers/log
  ```
  or
  ```shell
-  composer require clovers/view:版本
+  composer require clovers/log:版本
  ```
-###### 哈哈哈哈哈哈哈  哈哈哈 
