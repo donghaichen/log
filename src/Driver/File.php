@@ -40,6 +40,6 @@ class File
             rename($destination, dirname($destination) . '/' . date('YmdHis') . '-' . basename($destination));
         }
         return error_log($logData, 3, $destination);
-    }
+     }
 
 }

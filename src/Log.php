@@ -1,6 +1,5 @@
 <?php
 /**
- * Clover Log
  * Clover Log 类
  *
  * @author Donghaichen [<chendongahai888@gmail.com>]
