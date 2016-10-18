@@ -30,14 +30,14 @@ class File
     public function save($logData)
     {
         $path =$this->config['path'];
-        $file = isset($this->config['type']) ?  $path .  $this->config['type'] . '/' : $path ;
-        $destination = $file . date('Ym') . '/' . date('d') . '.log';
+        $file = isset($this->config['type']) ?  $path .  $this->config['type'] . DS : $path ;
+        $destination = $file . date('Ym') . DS . date('d') . '.log';
         $path = dirname($destination);
         !is_dir($path) && mkdir($path, 0755, true);
 
         //检测日志文件大小，超过配置大小则备份日志文件重新生成
         if (is_file($destination) && floor($this->config['file_size']) <= filesize($destination)) {
-            rename($destination, dirname($destination) . '/' . date('YmdHis') . '-' . basename($destination));
+            rename($destination, dirname($destination) . DS . date('YmdHis') . '-' . basename($destination));
         }
         return error_log($logData, 3, $destination);
      }

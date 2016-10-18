@@ -31,6 +31,9 @@ class Log
      */
     public static function __callStatic($method, $args)
     {
+        if(count($args[1]) === 0 ){
+            return false;
+        }
         if (in_array($method, self::$level)) {
             array_push($args, $method);
             if(count($args) == 3){
@@ -91,33 +94,35 @@ class Log
      */
     public static function logData()
     {
-        $now         = date('Y-m-d H:i:s');
+        $now       = date('Y-m-d H:i:s');
         if (isset($_SERVER['HTTP_HOST'])) {
-            $current_uri = $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+            $current_uri = get_current_url();
         } else {
             $current_uri = "cmd:" . implode(' ', $_SERVER['argv']);
         }
+
+        $uri        = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
         $runtime    = number_format(microtime(true) - APP_START_TIME, 10);
         $reqs       = $runtime > 0 ? number_format(1 / $runtime, 2) : '∞';
         $time_str   = ' [运行时间：' . number_format($runtime, 6) . 's][吞吐率：' . $reqs . 'req/s]';
         $memory_use = number_format((memory_get_usage() - APP_START_MEM) / 1024, 2);
         $memory_str = ' [内存消耗：' . $memory_use . 'kb]';
         $file_load  = ' [文件加载：' . count(get_included_files()) . ']';
+        $method     = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'CLI';
 
-        $info   = '[ log ] ' . $current_uri . $time_str . $memory_str . $file_load . "\r\n";
+        $info   = '[ log ] [' . $method . '] [' . $uri . ']' . $time_str . $memory_str . $file_load . "\r\n";
         $server = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : '0.0.0.0';
         $remote = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';
-        $method = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'CLI';
-        $uri    = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+
         $log = self::$log;
-        $log['info']['REQUEST'] = $_REQUEST;
         $log['info']['UA'] = $_SERVER['HTTP_USER_AGENT'];
         $msg = '';
         foreach ($log as $type => $val) {
             $msg .= '[ ' . $type . ' ] ' . var_export($val, true) . "\r\n";
         }
-        $logData = "[{$now}] {$server} {$remote} {$method} {$uri}\r\n{$info}{$msg}-------------------------------";
+        $logData = "[{$now}] {$server} {$remote} {$current_uri}\r\n{$info}{$msg}-------------------------------";
         $logData .= "------------------------------------------------------------------------------------\r\n\r\n";
+        var_dump($logData);
         return $logData;
     }
 
