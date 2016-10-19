@@ -17,6 +17,8 @@ class Log
     protected static $config = [];
     // 日志等级
     protected static $level = ['emergency', 'alert', 'critical', 'error', 'warning', 'notice', 'info', 'debug'];
+    //当前日志等级
+    protected static $curLevel ;
     // 日志写入驱动
     protected static $driver;
 
@@ -71,7 +73,11 @@ class Log
      */
     public static function record($msg, $type = 'log')
     {
+        if(!$msg){
+            return false;
+        }
         self::$log[$type] = $msg;
+        self::$curLevel = $type;
         self::write();
     }
 
@@ -85,8 +91,19 @@ class Log
         $class = new self::$driver($log);
         return $class->save(self::logData());
     }
-
-
+    public static function getUrl()
+    {
+        $url = 'http://';
+        if(isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on'){
+            $url = 'https://';
+        }
+        if($_SERVER['SERVER_PORT']!='80'){
+            $url.= $_SERVER['SERVER_NAME'] . ':' . $_SERVER['SERVER_PORT'] . $_SERVER['REQUEST_URI'];
+        }else{
+            $url.= $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
+        }
+        return $url;
+    }
     /**
      * 日志内容接口
      * @access public
@@ -95,8 +112,16 @@ class Log
     public static function logData()
     {
         $now       = date('Y-m-d H:i:s');
+        if(!is_array(self::$log[self::$curLevel]))
+        {
+            $eol = PHP_EOL;
+            $msg = self::$log[self::$curLevel];
+            $type = strtoupper(self::$curLevel);
+            return "[{$now}] [{$type}] {$msg}{$eol}";
+        }
+
         if (isset($_SERVER['HTTP_HOST'])) {
-            $current_uri = get_current_url();
+            $current_uri = self::getUrl();
         } else {
             $current_uri = "cmd:" . implode(' ', $_SERVER['argv']);
         }
@@ -110,19 +135,18 @@ class Log
         $file_load  = ' [文件加载：' . count(get_included_files()) . ']';
         $method     = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'CLI';
 
-        $info   = '[ log ] [' . $method . '] [' . $uri . ']' . $time_str . $memory_str . $file_load . "\r\n";
+        $info   = '[ log ] [' . $method . '] [' . $uri . ']' . $time_str . $memory_str . $file_load . PHP_EOL;
         $server = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : '0.0.0.0';
         $remote = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';
 
-        $log = self::$log;
         $log['info']['UA'] = $_SERVER['HTTP_USER_AGENT'];
         $msg = '';
         foreach ($log as $type => $val) {
-            $msg .= '[ ' . $type . ' ] ' . var_export($val, true) . "\r\n";
+            $msg .= '[ ' . $type . ' ] ' . var_export($val, true) . PHP_EOL;
         }
-        $logData = "[{$now}] {$server} {$remote} {$current_uri}\r\n{$info}{$msg}-------------------------------";
-        $logData .= "------------------------------------------------------------------------------------\r\n\r\n";
-        var_dump($logData);
+        $eol = PHP_EOL;
+        $logData = "[{$now}] {$server} {$remote} {$current_uri}{$eol}{$info}{$msg}-------------------------------";
+        $logData .= "------------------------------------------------------------------------------------{$eol}{$eol}";
         return $logData;
     }
 
