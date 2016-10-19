@@ -139,6 +139,7 @@ class Log
         $server = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : '0.0.0.0';
         $remote = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';
 
+        $log = self::$log;
         $log['info']['UA'] = $_SERVER['HTTP_USER_AGENT'];
         $msg = '';
         foreach ($log as $type => $val) {
